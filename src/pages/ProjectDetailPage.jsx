@@ -347,6 +347,7 @@ function TaskModal({
   onChanged,
 }) {
   const { t } = useTranslation()
+  const [editing, setEditing] = useState(false)
   const [comments, setComments] = useState([])
   const [body, setBody] = useState('')
   const [busy, setBusy] = useState(false)
