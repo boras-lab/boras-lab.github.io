@@ -376,9 +376,30 @@ function TaskModal({
     }
   }
 
+  if (editing) {
+    return (
+      <EditTaskModal
+        task={task}
+        onClose={() => setEditing(false)}
+        onSaved={async () => {
+          setEditing(false)
+          await onChanged()
+        }}
+      />
+    )
+  }
+
   return (
     <Modal open title={task.title} onClose={onClose}>
       <div className="space-y-4">
+        {canManage && (
+          <button
+            onClick={() => setEditing(true)}
+            className="text-sm text-primary hover:underline"
+          >
+            ✎ {t('common.edit')}
+          </button>
+        )}
         <div className="flex flex-wrap gap-2 text-sm">
           <span className={`rounded px-2 py-0.5 text-white ${STATUS_COLOR[task.status]}`}>
             {t(`status.${task.status}`)}
@@ -455,6 +476,81 @@ function TaskModal({
           </form>
         </div>
       </div>
+    </Modal>
+  )
+}
+
+function EditTaskModal({ task, onClose, onSaved }) {
+  const { t } = useTranslation()
+  const [form, setForm] = useState({
+    title: task.title,
+    description: task.description ?? '',
+    priority: task.priority,
+    deadline: task.deadline ?? '',
+  })
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function submit(e) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    try {
+      const payload = { ...form }
+      if (!payload.deadline) delete payload.deadline
+      await api.patch(`/api/tasks/${task.id}/`, payload)
+      await onSaved()
+    } catch {
+      setError(t('project.couldNotSaveTask'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal open title={t('common.edit')} onClose={onClose}>
+      <form onSubmit={submit} className="space-y-4">
+        <Text label={t('project.title')} value={form.title} onChange={(v) => setForm({ ...form, title: v })} required />
+        <label className="block">
+          <span className="text-sm text-muted">{t('project.description')}</span>
+          <textarea
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+            className="mt-1 w-full rounded-lg bg-surface-2 border border-border px-3 py-2 outline-none focus:border-primary"
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="text-sm text-muted">{t('project.priority')}</span>
+            <select
+              value={form.priority}
+              onChange={(e) => setForm({ ...form, priority: e.target.value })}
+              className="mt-1 w-full rounded-lg bg-surface-2 border border-border px-3 py-2"
+            >
+              {PRIORITIES.map((p) => (
+                <option key={p} value={p}>{t(`priority.${p}`)}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm text-muted">{t('project.deadline')}</span>
+            <input
+              type="date"
+              value={form.deadline}
+              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              className="mt-1 w-full rounded-lg bg-surface-2 border border-border px-3 py-2"
+            />
+          </label>
+        </div>
+        {error && <p className="text-sm text-danger">{error}</p>}
+        <button
+          disabled={busy}
+          className="w-full rounded-xl bg-primary py-2.5 font-medium text-primary-fg hover:bg-primary-hover disabled:opacity-50"
+        >
+          {busy ? t('project.saving') : t('common.save')}
+        </button>
+      </form>
     </Modal>
   )
 }
