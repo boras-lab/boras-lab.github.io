@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ProjectDetailPage from './pages/ProjectDetailPage'
+import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
   return (
@@ -34,6 +35,14 @@ export default function App() {
             }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         </PreferencesProvider>
       </AuthProvider>

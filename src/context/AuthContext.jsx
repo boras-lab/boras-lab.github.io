@@ -7,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // On first load, if we have a token, fetch the current user.
   useEffect(() => {
     let active = true
     async function bootstrap() {
@@ -40,8 +39,13 @@ export function AuthProvider({ children }) {
 
   async function register(payload) {
     await api.post('/api/auth/register/', payload)
-    // Convenience: log the new user straight in.
     return login(payload.username, payload.password)
+  }
+
+  async function refreshUser() {
+    const { data } = await api.get('/api/auth/me/')
+    setUser(data)
+    return data
   }
 
   function logout() {
@@ -49,7 +53,7 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = { user, loading, login, register, logout }
+  const value = { user, loading, login, register, logout, refreshUser }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

@@ -55,6 +55,12 @@ export default function DashboardPage() {
             >
               {t('common.logout')}
             </button>
+            <Link
+  to="/settings"
+  className="rounded-lg border border-border px-3 py-1.5 hover:bg-surface-2"
+>
+  {t('settings.title')}
+</Link>
           </div>
         </div>
       </header>
